@@ -2,27 +2,23 @@
 
 namespace Seld\AutoloadBench\Loader;
 
+/*
+ * Copied from Composer sources (MIT licensed)
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * This class is loosely based on the Symfony UniversalClassLoader.
+ *
+ * @author Fabien Potencier <fabien@symfony.com>
+ * @author Jordi Boggiano <j.boggiano@seld.be>
+ */
 class Composer
 {
     private $prefixes = array();
     private $fallbackDirs = array();
     private $useIncludePath = false;
     private $classMap = array();
-
-    public function getPrefixes()
-    {
-        return $this->prefixes;
-    }
-
-    public function getFallbackDirs()
-    {
-        return $this->fallbackDirs;
-    }
-
-    public function getClassMap()
-    {
-        return $this->classMap;
-    }
 
     /**
      * @param array $classMap Class to filename map
@@ -59,45 +55,6 @@ class Composer
         } else {
             $this->prefixes[$prefix] = (array) $paths;
         }
-    }
-
-    /**
-     * Turns on searching the include path for class files.
-     *
-     * @param Boolean $useIncludePath
-     */
-    public function setUseIncludePath($useIncludePath)
-    {
-        $this->useIncludePath = $useIncludePath;
-    }
-
-    /**
-     * Can be used to check if the autoloader uses the include path to check
-     * for classes.
-     *
-     * @return Boolean
-     */
-    public function getUseIncludePath()
-    {
-        return $this->useIncludePath;
-    }
-
-    /**
-     * Registers this instance as an autoloader.
-     *
-     * @param Boolean $prepend Whether to prepend the autoloader or not
-     */
-    public function register($prepend = false)
-    {
-        spl_autoload_register(array($this, 'loadClass'), true, $prepend);
-    }
-
-    /**
-     * Unregisters this instance as an autoloader.
-     */
-    public function unregister()
-    {
-        spl_autoload_unregister(array($this, 'loadClass'));
     }
 
     /**
