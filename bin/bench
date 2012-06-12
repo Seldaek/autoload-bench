@@ -1,0 +1,8 @@
+#!/bin/env php
+<?php
+
+require __DIR__.'/../vendor/autoload.php';
+
+(new Seld\AutoloadBench\Runner(dirname(__DIR__).'/build'))
+    ->prepare(3000)
+    ->run([200, 500, -500], 100);
