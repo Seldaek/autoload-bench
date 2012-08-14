@@ -120,5 +120,7 @@ class Composer
         if ($this->useIncludePath && $file = stream_resolve_include_path($classPath)) {
             return $file;
         }
+
+        $this->classMap[$class] = false;
     }
 }
