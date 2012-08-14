@@ -27,6 +27,9 @@ class Runner
             $instance = new $class($this->path.'/'.$name);
             if ($instance->enabled()) {
                 $this->builders[$name] = $instance;
+            } else {
+                echo 'Skipped '.$name.' loader because it reports itself as disabled'.PHP_EOL;
+                unset($this->builders[$name]);
             }
         }
     }
