@@ -89,7 +89,7 @@ class Runner
                 $expected = false;
             }
 
-            echo 'Starting '.$total.' runs ('.$load.' classes)'.PHP_EOL;
+            echo 'Starting '.$total.' runs ('.($load > 0 ? $load : 'fail '.abs($load)).' classes)'.PHP_EOL;
             $run = 0;
             $iterations = 0;
             while ($iterations++ < $runs) {
