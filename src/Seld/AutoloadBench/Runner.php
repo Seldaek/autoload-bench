@@ -57,8 +57,11 @@ class Runner
         echo 'Including classes'.PHP_EOL;
         foreach ($this->builders as $name => $builder) {
             $start = microtime(true);
-            $builder->getLoader();
+            $mem = memory_get_usage();
+            $loader = $builder->getLoader();
             $results[$name] = microtime(true) - $start;
+            $memResults[$name] = memory_get_usage() - $mem;
+            unset($loader);
         }
 
         $longestName = 0;
@@ -70,6 +73,7 @@ class Runner
         foreach ($results as $name => $data) {
             echo '> '.$name.': '.str_repeat(' ', $longestName - strlen($name));
             echo sprintf('%.3fms', $data * 1000);
+            echo '  memory use: '.round($memResults[$name]/1024, 1).'KB';
             echo PHP_EOL;
         }
         echo PHP_EOL;
