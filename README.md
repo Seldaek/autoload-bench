@@ -10,7 +10,7 @@ This is a simple benchmarking tool that compares a few autoloading strategies.
 ## Motivation
 
 While [other benchmarks](http://mwop.net/blog/245-Autoloading-Benchmarks.html)
-exist already, I needed one that could be ran very easily, and that focused on
+exist already, I needed one that could be run very easily, and that focused on
 what IMO is the only differenciator amongst autoloading scripts: the time it takes
 to locate a file for a given class name. I have no interest in APC or actually
 loading a class, that's PHP's job.
