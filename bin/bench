@@ -4,5 +4,12 @@
 require __DIR__.'/../vendor/autoload.php';
 
 (new Seld\AutoloadBench\Runner(dirname(__DIR__).'/build'))
-    ->prepare(3000)
-    ->run([200, 500, -500], 100);
+    ->prepare(2000)
+    ->run([200, 500, -500], 100)
+    ->prepare(1000, 'SharedVendor\\')
+    ->run([300], 100)
+    ->prepare(1000, 'SharedVendor\\', 2)
+    ->run([300], 100)
+    ->prepare(1000, '', 2)
+    ->run([300], 40)
+;
