@@ -34,17 +34,24 @@ class Runner
         }
     }
 
-    public function prepare($numClasses)
+    public function prepare($numClasses, $sharedPrefix = '', $prefixMapLevel = 1)
     {
         $gen = new Generator;
         if (!is_dir($this->path.'/classes')) {
             mkdir($this->path.'/classes', 0777, true);
         }
 
+        echo PHP_EOL;
         echo 'Generating '.$numClasses.' classes'.PHP_EOL;
-        $this->classes = $gen->generate($numClasses, $this->path.'/classes');
+        if (!empty($sharedPrefix)) {
+            echo 'Shared prefix: ' . $sharedPrefix . PHP_EOL;
+        }
+        if (1 !== $prefixMapLevel) {
+            echo 'Prefix level for PSR-0: ' . $prefixMapLevel . PHP_EOL;
+        }
+        $this->classes = $gen->generate($numClasses, $this->path.'/classes', $sharedPrefix);
         foreach ($this->builders as $name => $builder) {
-            $builder->build($this->classes, $this->path.'/classes');
+            $builder->prepare($this->classes, $this->path.'/classes', $prefixMapLevel);
         }
 
         return $this;
@@ -105,8 +112,16 @@ class Runner
                     $start = microtime(true);
                     $loader = $builder->getLoader();
                     foreach ($toLoad as $class) {
-                        if ($expected !== $loader->loadClass($class)) {
-                            throw new \RuntimeException($name.' failed to process '.$class);
+                        if ($expected !== $loaderResult = $loader->loadClass($class)) {
+                            if (FALSE === $loaderResult) {
+                                throw new \RuntimeException($name.' failed to load '.$class);
+                            }
+                            elseif (TRUE === $loaderResult) {
+                                throw new \RuntimeException($name.' must not load '.$class);
+                            }
+                            else {
+                                throw new \RuntimeException($name.' must return TRUE or FALSE.');
+                            }
                         }
                     }
                     $results[$name]['runs'][$run] = microtime(true) - $start;
@@ -146,6 +161,8 @@ class Runner
 
             echo PHP_EOL;
         }
+
+        return $this;
     }
 
     protected function printTable(array $matrix, array $align, $glue = ' ')
