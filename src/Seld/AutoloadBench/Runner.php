@@ -70,12 +70,16 @@ class Runner
         }
 
         asort($results);
+        $matrix = array();
         foreach ($results as $name => $data) {
-            echo '> '.$name.': '.str_repeat(' ', $longestName - strlen($name));
-            echo sprintf('%.3fms', $data * 1000);
-            echo '  memory use: '.round($memResults[$name]/1024, 1).'KB';
-            echo PHP_EOL;
+            $row = array();
+            $row[] = '> '.$name.': ';
+            $row[] = sprintf('%.3fms', $data * 1000);
+            $row[] = ' memory use:';
+            $row[] = round($memResults[$name]/1024, 1).'KB';
+            $matrix[] = $row;
         }
+        $this->printTable($matrix, [0, 1, 0, 1]);
         echo PHP_EOL;
 
         foreach ($series as $load) {
@@ -130,13 +134,36 @@ class Runner
                 return $a['avg'] > $b['avg'] ? 1 : -1;
             });
 
+            $matrix = array();
             foreach ($results as $name => $data) {
-                echo '> '.$name.': '.str_repeat(' ', $longestName - strlen($name));
-                echo sprintf('%.6fms (%.2fx)', $data['avg'] * 1000, $data['avg'] / $fastest);
-                echo PHP_EOL;
+                $row = array();
+                $row[] = '> ' . $name . ':';
+                $row[] = sprintf('%.6fms', $data['avg'] * 1000);
+                $row[] = sprintf('(%.2fx)', $data['avg'] / $fastest);
+                $matrix[] = $row;
             }
+            $this->printTable($matrix, [0, 1, 1, 1]);
 
             echo PHP_EOL;
+        }
+    }
+
+    protected function printTable(array $matrix, array $align, $glue = ' ')
+    {
+        $widths = array();
+        foreach ($matrix as $iRow => $row) {
+            foreach ($row as $iCol => $cell) {
+                $l = strlen($cell);
+                if (!isset($widths[$iCol]) || $l > $widths[$iCol]) {
+                    $widths[$iCol] = $l;
+                }
+            }
+        }
+        foreach ($matrix as $iRow => $row) {
+            foreach ($row as $iCol => $cell) {
+                $row[$iCol] = str_pad($cell, $widths[$iCol], ' ', !empty($align[$iCol]) ? STR_PAD_LEFT : STR_PAD_RIGHT);
+            }
+            echo implode($glue, $row) . PHP_EOL;
         }
     }
 }
