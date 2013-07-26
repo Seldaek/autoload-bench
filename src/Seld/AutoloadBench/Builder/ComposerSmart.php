@@ -6,7 +6,7 @@ use Seld\AutoloadBench\Builder;
 
 class ComposerSmart extends Builder
 {
-    public function build($classes, $path)
+    public function build($classes, $path, $prefixMapLevel = 1)
     {
         $code = <<<'EOF'
 <?php
@@ -24,7 +24,7 @@ EOF
 
         $prefixes = array();
         foreach ($classes as $class) {
-            $prefix = substr($class, 0, strpos($class, '\\'));
+            $prefix = implode('\\', array_slice(explode('\\', $class), 0, $prefixMapLevel));
             $prefixes[$prefix] = $path;
         }
 
