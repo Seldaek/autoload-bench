@@ -34,17 +34,24 @@ class Runner
         }
     }
 
-    public function prepare($numClasses)
+    public function prepare($numClasses, $sharedPrefix = '', $prefixMapLevel = 1)
     {
         $gen = new Generator;
         if (!is_dir($this->path.'/classes')) {
             mkdir($this->path.'/classes', 0777, true);
         }
 
+        echo PHP_EOL;
         echo 'Generating '.$numClasses.' classes'.PHP_EOL;
-        $this->classes = $gen->generate($numClasses, $this->path.'/classes');
+        if (!empty($sharedPrefix)) {
+            echo 'Shared prefix: ' . $sharedPrefix . PHP_EOL;
+        }
+        if (1 !== $prefixMapLevel) {
+            echo 'Prefix level for PSR-0: ' . $prefixMapLevel . PHP_EOL;
+        }
+        $this->classes = $gen->generate($numClasses, $this->path.'/classes', $sharedPrefix);
         foreach ($this->builders as $name => $builder) {
-            $builder->build($this->classes, $this->path.'/classes');
+            $builder->prepare($this->classes, $this->path.'/classes', $prefixMapLevel);
         }
 
         return $this;
@@ -70,12 +77,16 @@ class Runner
         }
 
         asort($results);
+        $matrix = array();
         foreach ($results as $name => $data) {
-            echo '> '.$name.': '.str_repeat(' ', $longestName - strlen($name));
-            echo sprintf('%.3fms', $data * 1000);
-            echo '  memory use: '.round($memResults[$name]/1024, 1).'KB';
-            echo PHP_EOL;
+            $row = array();
+            $row[] = '> '.$name.': ';
+            $row[] = sprintf('%.3fms', $data * 1000);
+            $row[] = ' memory use:';
+            $row[] = round($memResults[$name]/1024, 1).'KB';
+            $matrix[] = $row;
         }
+        $this->printTable($matrix, [0, 1, 0, 1]);
         echo PHP_EOL;
 
         foreach ($series as $load) {
@@ -101,8 +112,16 @@ class Runner
                     $start = microtime(true);
                     $loader = $builder->getLoader();
                     foreach ($toLoad as $class) {
-                        if ($expected !== $loader->loadClass($class)) {
-                            throw new \RuntimeException($name.' failed to process '.$class);
+                        if ($expected !== $loaderResult = $loader->loadClass($class)) {
+                            if (FALSE === $loaderResult) {
+                                throw new \RuntimeException($name.' failed to load '.$class);
+                            }
+                            elseif (TRUE === $loaderResult) {
+                                throw new \RuntimeException($name.' must not load '.$class);
+                            }
+                            else {
+                                throw new \RuntimeException($name.' must return TRUE or FALSE.');
+                            }
                         }
                     }
                     $results[$name]['runs'][$run] = microtime(true) - $start;
@@ -130,13 +149,38 @@ class Runner
                 return $a['avg'] > $b['avg'] ? 1 : -1;
             });
 
+            $matrix = array();
             foreach ($results as $name => $data) {
-                echo '> '.$name.': '.str_repeat(' ', $longestName - strlen($name));
-                echo sprintf('%.6fms (%.2fx)', $data['avg'] * 1000, $data['avg'] / $fastest);
-                echo PHP_EOL;
+                $row = array();
+                $row[] = '> ' . $name . ':';
+                $row[] = sprintf('%.6fms', $data['avg'] * 1000);
+                $row[] = sprintf('(%.2fx)', $data['avg'] / $fastest);
+                $matrix[] = $row;
             }
+            $this->printTable($matrix, [0, 1, 1, 1]);
 
             echo PHP_EOL;
+        }
+
+        return $this;
+    }
+
+    protected function printTable(array $matrix, array $align, $glue = ' ')
+    {
+        $widths = array();
+        foreach ($matrix as $iRow => $row) {
+            foreach ($row as $iCol => $cell) {
+                $l = strlen($cell);
+                if (!isset($widths[$iCol]) || $l > $widths[$iCol]) {
+                    $widths[$iCol] = $l;
+                }
+            }
+        }
+        foreach ($matrix as $iRow => $row) {
+            foreach ($row as $iCol => $cell) {
+                $row[$iCol] = str_pad($cell, $widths[$iCol], ' ', !empty($align[$iCol]) ? STR_PAD_LEFT : STR_PAD_RIGHT);
+            }
+            echo implode($glue, $row) . PHP_EOL;
         }
     }
 }

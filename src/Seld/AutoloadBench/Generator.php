@@ -55,11 +55,11 @@ class Generator
         'Config', 'Bridge', 'Logout', 'DateFormat', 'Core',
     ];
 
-    public function generate($amount, $path)
+    public function generate($amount, $path, $sharedPrefix = '')
     {
         $classes = [];
         while ($amount--) {
-            $class = $this->generateName();
+            $class = $sharedPrefix . $this->generateName();
             $file = $path.'/'.strtr($class, '\\', '/').'.php';
             if (!is_dir(dirname($file))) {
                 mkdir(dirname($file), 0777, true);

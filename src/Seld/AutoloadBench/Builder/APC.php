@@ -6,8 +6,11 @@ use Seld\AutoloadBench\Builder;
 
 class APC extends Builder
 {
-    public function build($classes, $path)
+    protected function build($classes, $path)
     {
+        if (function_exists('apc_clear_cache')) {
+            apc_clear_cache('user');
+        }
         $code = '<?php return new \Seld\AutoloadBench\Loader\APC(%s);';
 
         foreach ($classes as $class) {
