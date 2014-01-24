@@ -12,4 +12,6 @@ require __DIR__.'/../vendor/autoload.php';
     ->run([300], 100)
     ->prepare(1000, '', 2)
     ->run([300], 40)
+    ->prepare(8000, 'SharedVendor\\')
+    ->run([300], 100)
 ;
