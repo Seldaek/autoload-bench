@@ -22,5 +22,10 @@ class Cdb extends Builder
 
         file_put_contents($this->path.'/loader.php', sprintf($code, $dbfile));
     }
+
+    public function enabled()
+    {
+        return extension_loaded('dba') && in_array('cdb', dba_handlers());
+    }
 }
 
